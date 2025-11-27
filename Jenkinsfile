@@ -2,53 +2,50 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB = "dockerhub"
-        IMAGE = "yourdockerhubusername/react-portfolio"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') 
+        IMAGE_NAME = "yourdockerhubusername/portfolio"
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/bushra1127/devops-demo.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${IMAGE}:${BUILD_NUMBER} ."
-                }
+                sh """
+                    docker build -t ${IMAGE_NAME}:latest .
+                """
             }
         }
 
-        stage('Login Docker Hub') {
+        stage('Login to Docker Hub') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: DOCKERHUB, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
-                    }
-                }
+                sh """
+                    echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                """
             }
         }
 
         stage('Push Image') {
             steps {
-                script {
-                    sh "docker push ${IMAGE}:${BUILD_NUMBER}"
-                }
+                sh """
+                    docker push ${IMAGE_NAME}:latest
+                """
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Container') {
             steps {
-                script {
-                    sh "docker stop portfolio || true"
-                    sh "docker rm portfolio || true"
-                    sh "docker run -d --name portfolio -p 80:80 ${IMAGE}:${BUILD_NUMBER}"
-                }
+                sh """
+                    docker rm -f portfolio || true
+                    docker pull ${IMAGE_NAME}:latest
+                    docker run -d --name portfolio -p 80:80 ${IMAGE_NAME}:latest
+                """
             }
         }
-
     }
 }

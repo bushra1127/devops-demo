@@ -4,10 +4,12 @@ WORKDIR /usr/share/nginx/html
 
 COPY index.html .
 COPY index.css .
-COPY message.txt .
 
-# If you have images or other assets, copy them too
-# COPY assets/ ./assets/
+# If you have images like logo.svg or assets, copy them:
+COPY logo.svg .
+
+# Remove default nginx index page
+RUN rm -f /usr/share/nginx/html/index.html
 
 EXPOSE 80
 

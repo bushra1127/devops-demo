@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') 
-        IMAGE_NAME = "bushra-devops-project/portfolio"
+        IMAGE_NAME = "bushradockerhub/portfolio"
     }
 
     stages {
